@@ -11,16 +11,16 @@
 - [가이드](#guide)
   * [기본적인 라우팅과 디스패치](#basic-routing-and-dispatch)
   * [라우트 매쳐](#route-matchers)
-  * [Parameter destructuring](#parameter-destructuring)
-  * [Query parameters](#query-parameters)
-  * [Named routes](#named-routes)
-- [Example with history](#example-with-googhistory)
-- [Available protocols](#available-protocols)
-- [Contributors](#contributors)
-- [Committers](#committers)
+  * [파라메터 디스트럭처링](#parameter-destructuring)
+  * [쿼리 파라메터](#query-parameters)
+  * [함수로 쓸수 있는 라우터](#named-routes)
+- [History를 사용한 예](#example-with-googhistory)
+- [프로토콜](#available-protocols)
+- [컨트리뷰터](#contributors)
+- [커미터](#committers)
 
 
-## Installation
+## 설치
 
 `project.clj` 파일 안에 `:dependencies` 벡터에 secretary를 추가한다:
 
@@ -46,12 +46,15 @@ secretary를 사용하려면 secretary를 `:require` 해준다.
 
 ### 기본적인 라우팅과 액션 실행
 
-Secretary는 두가지 목적을 위해 만들어졌다: 라우트 매쳐를 생성하고 알맞은 액션을 실행하는 것이다.
-라우터 매쳐는 기본적인 매칭기능과 URI에서 파라메터 가져오는 기능, 그리고 함수에서 그 파라메터를 사용할 수 있도록 해준다.
+Secretary는 두가지 목적을 위해 만들어졌다: 라우트 매쳐를 생성하고 
+알맞은 액션을 실행하는 것이다.
+라우터 매쳐는 기본적인 매칭기능과 URI에서 파라메터 가져오는 기능, 
+그리고 함수에서 그 파라메터를 사용할 수 있도록 해준다.
 
 `defroute`는 Secretary의 라우트 매쳐와 액션을 연결해주는 기본 매크로다.
 `defroute` 매크로의 시그네쳐는 `[name? route destruct & body]`다.
-`name?`은 [named routes](#named-routes)을 다룰때 설명할 것이기 때문에 지금은 무시하자.
+`name?`은 [named routes](#named-routes)을 다룰때 설명할 것이기 
+때문에 지금은 무시하자.
 이해를 돕기 위해 id 파라미터를 받은 users 라우트를 정의해보자.
 
 ```clojure
@@ -60,7 +63,8 @@ Secretary는 두가지 목적을 위해 만들어졌다: 라우트 매쳐를 생
 ```
 
 여기서 `"/users/:id"`는 라우트 매쳐라고 부르고 있는 `route`다.
-`{:as params}`는 라우트 매쳐의 매칭된 결과에서 파라메터 값을 디스트럭처링 하는 `destruct`다.
+`{:as params}`는 라우트 매쳐의 매칭된 결과에서 파라메터 값을 
+디스트럭처링 하는 `destruct`다.
 그리고 나머지 부분은 라우트 액션인 `body`다.
 
 더 자세히 알아보기 전에 지금 만든 라우터를 디스패치해서 확인해보자.
@@ -69,18 +73,24 @@ Secretary는 두가지 목적을 위해 만들어졌다: 라우트 매쳐를 생
 (secretary/dispatch! "/users/gf3")
 ```
 
-별 문제가 없다면 페이지를 새로고침 하면 콘솔창에 `User: gf3`라고 나오는 것을 볼 수 있다.
+별 문제가 없다면 페이지를 새로고침 하면 콘솔창에 
+`User: gf3`라고 나오는 것을 볼 수 있다.
 
 #### 라우트 매쳐
 
 기본적으로 라우트 메쳐는 문자열이나 정규식을 쓸 수 있다.
-문자열을 사용하는 경우 [Sinatra][sinatra]나 [Ruby on Rails][rails]를 사용해 본 사람들은 익숙할 만한 형태를 가지고 있다.
-특정 URI를 가지고 `secretary/dispatch!`를 부르면 라우트는 URI에 매칭되는 라우트를 찾고 그 라우트에 연결된 액션을 수행 한다.
+문자열을 사용하는 경우 [Sinatra][sinatra]나 [Ruby on Rails][rails]를 
+사용해 본 사람들은 익숙할 만한 형태를 가지고 있다.
+특정 URI를 가지고 `secretary/dispatch!`를 부르면 라우트는 URI에 매칭되는 
+라우트를 찾고 그 라우트에 연결된 액션을 수행 한다.
 라우트를 찾으면 URI에서 파라메터도 가져올 수 있다.
-문자열 라우트의 경우에는 이 파라메터들은 맵 형식을 가지고 정규식 라우트인 경우에는 벡터로 표현된다.
+문자열 라우트의 경우에는 이 파라메터들은 맵 형식을 가지고 
+정규식 라우트인 경우에는 벡터로 표현된다.
 
-위의 예에서 `"/users/gf3"` URI는 `"/users/:id"` 라우트에 매칭되고 `{:id "gf3}` 라는 파라메터 맵을 가진다.
-아래는 다양한 라우트 매쳐와 URI와 매칭이 되었을 때의 파라메터 맵을 보여주고 있다.
+위의 예에서 `"/users/gf3"` URI는 `"/users/:id"` 라우트에 매칭되고 
+`{:id "gf3}` 라는 파라메터 맵을 가진다.
+아래는 다양한 라우트 매쳐와 URI와 매칭이 되었을 때의 
+파라메터 맵을 보여주고 있다.
 
 라우드 메쳐          | URI              | 파라메터
 ---------------------|------------------|--------------------------
@@ -94,40 +104,40 @@ Secretary는 두가지 목적을 위해 만들어졌다: 라우트 매쳐를 생
 `#"/([a-z]+)/(\d+)"` | `"/foo/123"`     | `["foo" "123"]`
 
 
-#### Parameter destructuring
+#### 파라메터 디스트럭처링
 
-Now that we understand what happens during dispatch we can look at the
-`destruct` argument of `defroute`. This part is literally sugar
-around `let`. Basically whenever one of our route matches is
-successful and extracts parameters this is where we destructure
-them. Under the hood, for example with our users route, this looks
-something like the following.
+앞에서 기본적인 라우터 디스패칭에 대해서 알아봤다. 
+이제 `defroute`에 있는 `destruct` 아규먼트에 대해서 알아보자.
+이 부분은 `let` 구문으로 감싼 것처럼 동작한다.
+기본적으로 라우트 메처가 매칭이 되면 파라메터를 가져오고 가져온 
+파라메터를 디스트럭처링 한다.
+앞에서 만들었던 users 라우트는 내부적으로 아래와 같이 동작한다:
 
 ```clojure
 (let [{:as params} {:id "gf3"}]
   ...)
 ```
 
-Given this, it should be fairly easy to see that we could have have
-written
+따라서 아래와 같이 사용할 수 있고
 
 ```clojure
 (defroute "/users/:id" {id :id}
   (js/console.log (str "User: " id)))
 ```
 
-and seen the same result. With string route matchers we can go even
-further and write
+같은 결과가 나온다.
+
+문자열 라우트 메쳐를 사용한다면 이렇게 쓸 수도 있다:
 
 ```clojure
 (defroute "/users/:id" [id]
   (js/console.log (str "User: " id)))
 ```
 
-which is essentially the same as saying `{:keys [id]}`.
+위의 표현은 `{:keys [id]}`와 같다.
 
-For regular expression route matchers we can only use vectors for
-destructuring since they only ever return vectors.
+정규식 라우트 메쳐를 사용한다면 파라미터가 항상 벡터로 리턴되기 때문에 
+디스트럭처링하려면 벡터만 사용할 수 있다.
 
 ```clojure
 (defroute #"/users/(\d+)" [id]
@@ -135,11 +145,11 @@ destructuring since they only ever return vectors.
 ```
 
 
-#### Query parameters
+#### 쿼리 파라메터
 
-If a URI contains a query string it will automatically be extracted to
-`:query-params` for string route matchers and to the last element for
-regular expression matchers.
+URI에 쿼리 스트링이 있다면 문자열 라우트 메쳐에서는 `:query-params` 키에
+쿼리 스트링이 맵으로 들어오고 정규식 라우트 메쳐에서는 벡터의 
+마지막 파라미터에 쿼리 스트링 맵이 들어온다.
 
 ```clojure
 (defroute "/users/:id" [id query-params]
@@ -158,12 +168,11 @@ regular expression matchers.
 ```
 
 
-#### Named routes
+#### 함수로 쓸수 있는 라우터
 
-While route matching and dispatch is by itself useful, it is often
-necessary to have functions which take a map of parameters and return
-a URI. By passing an optional name to `defroute` Secretary will
-define this function for you.
+지금까지 살펴본 라우트 매칭과 디스패치는 충분히 유용하다. 
+하지만 많은 경우에 파라메터 맵 파라메터를 가지고 받고 URI를 리턴하는 함수가 필요할 때가 있다.
+이를 위해 `defroute` 매크로는 함수 이름을 넘겨서 이런 함수를 자동으로 만들 수 있다.
 
 ```clojure
 (defroute users-path "/users" []
@@ -176,21 +185,19 @@ define this function for you.
 (user-path {:id 1}) ;; => "/users/1"
 ```
 
-This also works with `:query-params`.
+`:query-params`도 사용할 수 있다:
 
 ```clojure
 (user-path {:id 1 :query-params {:action "delete"}})
 ;; => "/users/1?action=delete"
 ```
 
-If the browser you're targeting does not support HTML5 history you can
-call
+브러우저가 HTML5 히스토리를 지원하지 았는다면 아래와 같이 
+"#" Prefix를 만들어 쓸 수 있다.
 
 ```clojure
 (secretary/set-config! :prefix "#")
 ```
-
-to prefix generated URIs with a "#".
 
 ```clojure
 (user-path {:id 1})
@@ -198,10 +205,10 @@ to prefix generated URIs with a "#".
 ```
 
 
-### Available protocols
+### 프로토콜
 
-You can extend Secretary's protocols to your own data types and
-records if you need special functionality.
+필요한 기능이 있다면 데이터나 레코드 타입에 Secretary 프로토콜을
+확장할 수 있다.
 
 - [`IRenderRoute`](#irenderroute)
 - [`IRouteMatches`](#iroutematches)
@@ -209,9 +216,8 @@ records if you need special functionality.
 
 #### `IRenderRoute`
 
-Most of the time the defaults will be good enough but on occasion you
-may need custom route rendering. To do this implement `IRenderRoute`
-for your type or record.
+대부분의 경우에는 그대로 사용해도 충분하지만 특정 타입에 대해 커스텀 랜더링을
+할 수 있으면 편리하다. 이때 사용할 수 있는 프로토콜이 `IRenderRoute`이다.
 
 ```clojure
 (defrecord User [id]
@@ -232,15 +238,12 @@ for your type or record.
 
 #### `IRouteMatches`
 
-It is seldom you will ever need to create your own route matching
-implementation as the built in `String` and `RegExp` routes matchers
-should be fine for most applications. Still, if you have a suitable
-use case then this protocol is available. If your intention is to is
-to use it with `defroute` your implementation must return a map or
-vector.
+이 프로토콜은 이미 만들어져 있는 `String`이나 `RegExp` 처럼 따로 
+라우트 매처를 정의 할 수 있는 프로토콜로 대부분의 어플리케이션에는 
+거의 필요하지 않다. 그래도 이 프로토콜을 사용할 수 있게 해 놓았다.
+`defroute`에서 이 프로토콜을 사용한다면 맵이나 백터를 리턴하도록 구현해야한다.
 
-
-### Example with `goog.History`
+### `goog.History` 예제
 
 ```clojure
 (ns example
@@ -285,7 +288,7 @@ vector.
 ```
 
 
-## Contributors
+## 컨트리뷰터
 
 * [@gf3](https://github.com/gf3) (Gianni Chiappetta)
 * [@noprompt](https://github.com/noprompt) (Joel Holdbrooks)
@@ -296,13 +299,13 @@ vector.
 * [@bbbates](https://github.com/bbbates) (Brendan)
 * [@travis](https://github.com/travis) (Travis Vachon)
 
-## Committers
+## 커미터
 
 * [@gf3](https://github.com/gf3) (Gianni Chiappetta)
 * [@noprompt](https://github.com/noprompt) (Joel Holdbrooks)
 * [@joelash](https://github.com/joelash) (Joel Friedman)
 
-## License
+## 라이센스
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
