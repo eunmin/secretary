@@ -7,17 +7,17 @@
 
 ## Contents
 
-- [설치](#installation)
-- [가이드](#guide)
-  * [기본적인 라우팅과 디스패치](#basic-routing-and-dispatch)
-  * [라우트 매쳐](#route-matchers)
-  * [파라메터 디스트럭처링](#parameter-destructuring)
-  * [쿼리 파라메터](#query-parameters)
-  * [함수로 쓸수 있는 라우터](#named-routes)
-- [History를 사용한 예](#example-with-googhistory)
-- [프로토콜](#available-protocols)
-- [컨트리뷰터](#contributors)
-- [커미터](#committers)
+- [설치](#설치)
+- [가이드](#가이드)
+  * [기본적인 라우팅과 디스패치](#기본적인 라우팅과 디스패치)
+  * [라우트 매쳐](#라우트 매쳐)
+  * [파라메터 디스트럭처링](#파라메터 디스트럭처링)
+  * [쿼리 파라메터](#쿼리 파라메터)
+  * [함수로 쓸수 있는 라우터](#함수로 쓸수 있는 라우터)
+- [History를 사용한 예](#History를 사용한 예)
+- [프로토콜](#프로토콜)
+- [컨트리뷰터](#컨트리뷰터)
+- [커미터](#커미터)
 
 
 ## 설치
@@ -243,7 +243,7 @@ URI에 쿼리 스트링이 있다면 문자열 라우트 메쳐에서는 `:query
 거의 필요하지 않다. 그래도 이 프로토콜을 사용할 수 있게 해 놓았다.
 `defroute`에서 이 프로토콜을 사용한다면 맵이나 백터를 리턴하도록 구현해야한다.
 
-### `goog.History` 예제
+### History를 사용한 예
 
 ```clojure
 (ns example
