@@ -1,16 +1,16 @@
 # secretary
 
-A client-side router for ClojureScript.
+클로저스크립트에서 사용하는 클라이언트 라우터
 
 [ ![Codeship Status for gf3/secretary](https://codeship.io/projects/0b3ff6f0-ca42-0131-5e5a-5e2103a31145/status?branch=master)](https://codeship.io/projects/22531)
 
 
 ## Contents
 
-- [Installation](#installation)
-- [Guide](#guide)
-  * [Basic routing and dispatch](#basic-routing-and-dispatch)
-  * [Route matchers](#route-matchers)
+- [설치](#installation)
+- [가이드](#guide)
+  * [기본적인 라우팅과 디스패치](#basic-routing-and-dispatch)
+  * [라우트 매쳐](#route-matchers)
   * [Parameter destructuring](#parameter-destructuring)
   * [Query parameters](#query-parameters)
   * [Named routes](#named-routes)
@@ -22,21 +22,21 @@ A client-side router for ClojureScript.
 
 ## Installation
 
-Add secretary to your `project.clj` `:dependencies` vector:
+`project.clj` 파일 안에 `:dependencies` 벡터에 secretary를 추가한다:
 
 ```clojure
 [secretary "1.2.3"]
 ```
 
-For the current `SNAPSHOT` version use:
+현재 `SNAPSHOT` 버전은 아래와 같다:
 
 ```clojure
 [secretary "1.2.4-SNAPSHOT"]
 ```
 
-## Guide
+## 가이드
 
-To get started `:require` secretary somewhere in your project.
+secretary를 사용하려면 secretary를 `:require` 해준다.
 
 ```clojure
 (ns app.routes
@@ -44,58 +44,45 @@ To get started `:require` secretary somewhere in your project.
 ```
 
 
-### Basic routing and dispatch
+### 기본적인 라우팅과 액션 실행
 
-Secretary is built around two main goals: creating route matchers
-and dispatching actions. Route matchers match and extract
-parameters from URI fragments and actions are functions which
-accept those parameters.
+Secretary는 두가지 목적을 위해 만들어졌다: 라우트 매쳐를 생성하고 알맞은 액션을 실행하는 것이다.
+라우터 매쳐는 기본적인 매칭기능과 URI에서 파라메터 가져오는 기능, 그리고 함수에서 그 파라메터를 사용할 수 있도록 해준다.
 
-`defroute` is Secretary's primary macro for defining a link between a
-route matcher and an action. The signature of this macro is
-`[name? route destruct & body]`. We will skip the `name?` part
-of the signature for now and return to it when we discuss
-[named routes](#named-routes). To get clearer picture of this
-let's define a route for users with an id.
+`defroute`는 Secretary의 라우트 매쳐와 액션을 연결해주는 기본 매크로다.
+`defroute` 매크로의 시그네쳐는 `[name? route destruct & body]`다.
+`name?`은 [named routes](#named-routes)을 다룰때 설명할 것이기 때문에 지금은 무시하자.
+이해를 돕기 위해 id 파라미터를 받은 users 라우트를 정의해보자.
 
 ```clojure
 (defroute "/users/:id" {:as params}
   (js/console.log (str "User: " (:id params))))
 ```
 
-In this example `"/users/:id"` is `route`, the route matcher,
-`{:as params}` is `destruct`, the destructured parameters extracted
-from the route matcher result, and the remaining
-`(js/console.log ...)` portion is `body`, the route action.
+여기서 `"/users/:id"`는 라우트 매쳐라고 부르고 있는 `route`다.
+`{:as params}`는 라우트 매쳐의 매칭된 결과에서 파라메터 값을 디스트럭처링 하는 `destruct`다.
+그리고 나머지 부분은 라우트 액션인 `body`다.
 
-Before going in to more detail let's try to dispatch our route.
+더 자세히 알아보기 전에 지금 만든 라우터를 디스패치해서 확인해보자.
 
 ```clojure
 (secretary/dispatch! "/users/gf3")
 ```
 
-With any luck, when we refresh the page and view the console we should
-see that `User: gf3` has been logged somewhere.
+별 문제가 없다면 페이지를 새로고침 하면 콘솔창에 `User: gf3`라고 나오는 것을 볼 수 있다.
 
+#### 라우트 매쳐
 
-#### Route matchers
+기본적으로 라우트 메쳐는 문자열이나 정규식을 쓸 수 있다.
+문자열을 사용하는 경우 [Sinatra][sinatra]나 [Ruby on Rails][rails]를 사용해 본 사람들은 익숙할 만한 형태를 가지고 있다.
+특정 URI를 가지고 `secretary/dispatch!`를 부르면 라우트는 URI에 매칭되는 라우트를 찾고 그 라우트에 연결된 액션을 수행 한다.
+라우트를 찾으면 URI에서 파라메터도 가져올 수 있다.
+문자열 라우트의 경우에는 이 파라메터들은 맵 형식을 가지고 정규식 라우트인 경우에는 벡터로 표현된다.
 
-By default the route matcher may either be a string or regular
-expression. String route matchers have special syntax which may be
-familiar to you if you've worked with [Sinatra][sinatra] or
-[Ruby on Rails][rails]. When `secretary/dispatch!` is called with a
-URI it attempts to find a route match and it's corresponding
-action. If the match is successful, parameters will be extracted from
-the URI. For string route matchers these will be contained in a map;
-for regular expressions a vector.
+위의 예에서 `"/users/gf3"` URI는 `"/users/:id"` 라우트에 매칭되고 `{:id "gf3}` 라는 파라메터 맵을 가진다.
+아래는 다양한 라우트 매쳐와 URI와 매칭이 되었을 때의 파라메터 맵을 보여주고 있다.
 
-In the example above, the route matcher
-`"/users/:id"` successfully matched against `"/users/gf3"` and
-extracted `{:id "gf3}` as parameters. You can refer to the table below
-for more examples of route matchers and the parameters they return
-when matched successfully.
-
-Route matcher        | URI              | Parameters
+라우드 메쳐          | URI              | 파라메터
 ---------------------|------------------|--------------------------
 `"/:x/:y"`           | `"/foo/bar"`     | `{:x "foo" :y "bar"}`
 `"/:x/:x"`           | `"/foo/bar"`     | `{:x ["foo" "bar"]}`
